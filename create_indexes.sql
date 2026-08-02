@@ -1,0 +1,10 @@
+CREATE INDEX IF NOT EXISTS idx_sd_kode_rs  ON spending_data(kode_rs,  dataset);
+CREATE INDEX IF NOT EXISTS idx_sd_propinsi ON spending_data(propinsi, dataset);
+CREATE INDEX IF NOT EXISTS idx_sd_idrg1363 ON spending_data(idrg_code_1363, dataset);
+CREATE INDEX IF NOT EXISTS idx_sd_idrg1370 ON spending_data(idrg_code_1370, dataset);
+CREATE INDEX IF NOT EXISTS idx_sd_inacbg   ON spending_data(inacbg,   dataset);
+CREATE INDEX IF NOT EXISTS idx_sd_kelompok ON spending_data(kelompok_idrg, dataset);
+CREATE INDEX IF NOT EXISTS idx_sd_bulan    ON spending_data(bulan_data_uji_coba, dataset);
+CREATE INDEX IF NOT EXISTS idx_sd_komp     ON spending_data(klaim_kompetensi, dataset);
+CREATE INDEX IF NOT EXISTS idx_sd_pemilik  ON spending_data(pemilik, dataset);
+CREATE INDEX IF NOT EXISTS idx_sd_kelas    ON spending_data(kelas_faskes, dataset);
