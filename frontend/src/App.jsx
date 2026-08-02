@@ -76,13 +76,21 @@ function App() {
 
     fetch('/data/rs_kompetensi_online.json.gz')
       .then(async r => {
-        const ds = new DecompressionStream('gzip');
-        const blob = await r.blob();
-        const decompressed = blob.stream().pipeThrough(ds);
-        const text = await new Response(decompressed).text();
-        return JSON.parse(text);
+        if (!r.ok) {
+          return fetch('/data/rs_kompetensi_online.json').then(res => res.json());
+        }
+        try {
+          const ds = new DecompressionStream('gzip');
+          const blob = await r.blob();
+          const decompressed = blob.stream().pipeThrough(ds);
+          const text = await new Response(decompressed).text();
+          return JSON.parse(text);
+        } catch (e) {
+          // If browser or server already decompressed it or error
+          return fetch('/data/rs_kompetensi_online.json').then(res => res.json());
+        }
       })
-      .then(data => setRsKompetensiOnline(data))
+      .then(data => setRsKompetensiOnline(data || {}))
       .catch(err => console.error("Failed to load rs_kompetensi_online:", err));
   }, [effectiveDataset, isAuthenticated]);
 

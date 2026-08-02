@@ -30,9 +30,24 @@ const pool = new Pool({
     }
 })();
 
-// ─── Legacy Data Routes (Serve dynamic JSON) ──────────────────
+// ─── Legacy Data Routes (Serve dynamic JSON & static files) ───
+const fs = require('fs');
 app.get('/data/*', (req, res) => {
-    // URL format: /data/dataset3/dataset3_hospitals.json or /data/dataset1_rs_profiles.json
+    const rawPath = req.params[0] || req.path.replace(/^\/data\//, '');
+    const staticPath = path.join(__dirname, '../frontend/public/data', rawPath);
+    
+    // 1. Check if physical file exists in frontend/public/data
+    if (fs.existsSync(staticPath) && fs.statSync(staticPath).isFile()) {
+        if (rawPath.endsWith('.gz')) {
+            // If the client expects raw gz stream or decompressed
+            res.setHeader('Content-Type', 'application/json');
+            res.setHeader('Content-Encoding', 'gzip');
+            return fs.createReadStream(staticPath).pipe(res);
+        }
+        return res.sendFile(staticPath);
+    }
+
+    // 2. URL format: /data/dataset3/dataset3_hospitals.json or /data/dataset1_rs_profiles.json
     const filename = req.path.split('/').pop().replace('.json', '').replace('.gz', '');
     
     let datasetId = 'dataset1'; // default mapping
