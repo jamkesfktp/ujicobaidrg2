@@ -4,6 +4,7 @@ CREATE MATERIALIZED VIEW mv_spending_data AS
 SELECT
   dataset, propinsi, kabupaten, pemilik, jenis, jenis_faskes, kelas_faskes, regional_2023, blu_non_blu, rs_vertikal,
   klaim_kompetensi, kelompok_idrg, bulan_data_uji_coba,
+  ptd, kelas_rawat,
   inacbg, MAX(desc_inacbg) AS desc_inacbg, 
   idrg_code_1363, MAX(desc_idrg_1363) AS desc_idrg_1363, 
   idrg_code_1370, MAX(desc_idrg_1370) AS desc_idrg_1370, 
@@ -31,7 +32,7 @@ SELECT
 FROM spending_data
 GROUP BY 
   dataset, propinsi, kabupaten, pemilik, jenis, jenis_faskes, kelas_faskes, regional_2023, blu_non_blu, rs_vertikal,
-  klaim_kompetensi, kelompok_idrg, bulan_data_uji_coba,
+  klaim_kompetensi, kelompok_idrg, bulan_data_uji_coba, ptd, kelas_rawat,
   inacbg, idrg_code_1363, idrg_code_1370, kode_rs;
 
 CREATE INDEX idx_mv2_dataset ON mv_spending_data(dataset);

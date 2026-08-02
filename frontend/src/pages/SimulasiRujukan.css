@@ -1,0 +1,172 @@
+.simulasi-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.simulasi-header h1 {
+  font-size: 2.5rem;
+  color: var(--accent-primary);
+  margin-bottom: 0.5rem;
+}
+
+.simulasi-header p {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 2.5rem;
+  max-width: 800px;
+}
+
+.simulasi-grid {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 2rem;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+}
+
+.simulasi-controls h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.help-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.slider-group {
+  margin-bottom: 1.5rem;
+}
+
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+}
+
+.badge-paripurna { background-color: #c5221f; }
+.badge-utama { background-color: #1967d2; }
+.badge-madya { background-color: #b06000; }
+.badge-dasar { background-color: #137333; }
+
+input[type=range] {
+  width: 100%;
+  accent-color: var(--accent-primary);
+  height: 6px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  cursor: pointer;
+}
+
+.info-box {
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 2rem;
+}
+
+.info-box h4 {
+  color: #00B1A0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.info-box p {
+  color: #006c58;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.simulasi-results {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.summary-cards-sim {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.card-sim {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  flex: 1;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  border: 1px solid #eaeaea;
+}
+
+.card-sim h5 {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-sim h2 {
+  font-size: 2rem;
+  color: var(--text-primary);
+}
+
+.card-sim.highlight {
+  background: linear-gradient(135deg, #008a70 0%, #00b395 100%);
+  border: none;
+}
+
+.card-sim.highlight h5,
+.card-sim.highlight h2 {
+  color: white;
+}
+
+.chart-panel h3 {
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+}
+
+@media (max-width: 1024px) {
+  .simulasi-grid {
+    grid-template-columns: 1fr;
+  }
+}

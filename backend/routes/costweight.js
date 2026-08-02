@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
         MAX(idrg_mdc)                          AS mdc,
         SUM(jml_kasus)::bigint                 AS total_kasus,
         -- Cost weight = tarif_idrg / (NBR nasional) — direpresentasikan dengan tarif per kasus
-        ROUND(AVG(NULLIF(idrg_tarif_1363_tanpa_af,0))::numeric, 2) AS avg_cw_unit,
+        ROUND((SUM(idrg_total_tarif_1363_tanpa_af) / NULLIF(SUM(jml_kasus), 0))::numeric, 2) AS avg_cw_unit,
         SUM(total_tarif_inacbg)                AS total_inacbg,
         SUM(idrg_total_tarif_1363_tanpa_af)    AS total_idrg_sim1,
         SUM(idrg_total_tarif_1363_dengan_af)   AS total_idrg_sim2,

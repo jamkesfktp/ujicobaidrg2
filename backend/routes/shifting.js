@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
         MAX(jenis_faskes)                      AS jenis_faskes,
         MAX(kelas_faskes)                      AS kelas_faskes,
         MAX(regional_2023)                     AS regional,
-        MAX(faskes_kompetensi)                 AS faskes_kompetensi,
+        MAX(klaim_kompetensi)                 AS klaim_kompetensi,
         SUM(jml_kasus)::bigint                 AS total_kasus,
         SUM(total_tarif_inacbg)                AS total_tarif_inacbg,
         SUM(total_tarifrs)                     AS total_tarif_rs,

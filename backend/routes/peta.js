@@ -12,7 +12,7 @@ router.get('/inacbg-list', async (req, res) => {
       SELECT
         inacbg,
         MAX(desc_inacbg)     AS deskripsi,
-        MAX(kelompok_icd)    AS kelompok,
+        MAX(kelompok_idrg)    AS kelompok,
         SUM(jml_kasus)::bigint AS total_kasus
       FROM mv_spending_data
       WHERE dataset = $1 AND inacbg IS NOT NULL
