@@ -24,6 +24,13 @@ function getTarifCol(simulasi, drgType = '1363') {
   return map[sim] || `idrg_total_tarif_${dt}_dengan_af`;
 }
 
+function normalizeDbDataset(ds) {
+  if (!ds) return 'jan_des_v11';
+  if (ds.startsWith('jan_des') || ds.startsWith('dataset4') || ds.startsWith('dataset1')) return 'jan_des_v11';
+  if (ds.startsWith('okt_jun') || ds.startsWith('dataset3')) return 'okt_jun_v3';
+  return ds;
+}
+
 /**
  * Build parameterized WHERE clause dari query params request
  * Returns { where: string, params: array }
@@ -34,7 +41,7 @@ function buildWhere(q) {
   let   idx        = 1;
 
   // Dataset (wajib)
-  params.push(q.dataset || 'jan_des_v11');
+  params.push(normalizeDbDataset(q.dataset));
   conditions.push(`dataset = $${idx++}`);
 
   if (q.propinsi && q.propinsi !== 'all') {
@@ -69,10 +76,10 @@ function buildWhere(q) {
     params.push(`%${q.bulan}%`);
     conditions.push(`bulan_data_uji_coba ILIKE $${idx++}`);
   }
-  if (q.drg_type === '1363') {
+  if (q.drg_type === '1363' || (q.dataset && q.dataset.includes('1363'))) {
     conditions.push(`idrg_code_1363 IS NOT NULL`);
   }
-  if (q.drg_type === '1370') {
+  if (q.drg_type === '1370' || (q.dataset && q.dataset.includes('1370'))) {
     conditions.push(`idrg_code_1370 IS NOT NULL`);
   }
 
@@ -83,4 +90,4 @@ function buildWhere(q) {
   };
 }
 
-module.exports = { getTarifCol, buildWhere };
+module.exports = { getTarifCol, buildWhere, normalizeDbDataset };

@@ -25,7 +25,7 @@ import { loadDatasetFile } from './utils/dataLoader';
 
 function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [dataset, setDataset] = useState('dataset4_1363');
+  const [dataset, setDataset] = useState('jan_des_v11_1363');
   const [simulasi, setSimulasi] = useState(2);
   const [groupFilter, setGroupFilter] = useState([]);
   const [wilayahFilter, setWilayahFilter] = useState([]);
@@ -151,13 +151,13 @@ function App() {
                 <select className="styled-select" value={dataset} onChange={(e) => {
                   const val = e.target.value;
                   setDataset(val);
-                  if (val === 'dataset1_1363' || val === 'dataset3_1363' || val === 'dataset4_1363') setSimulasi(54);
-                  if (val === 'dataset1_1370' || val === 'dataset3_1370' || val === 'dataset4_1370') setSimulasi(41);
+                  if (val.includes('1363')) setSimulasi(54);
+                  if (val.includes('1370')) setSimulasi(41);
                 }}>
-                  <option value="dataset4_1363">📊 Jan-Des 2025 — v9_gabungan (1363 DRG)</option>
-                  <option value="dataset4_1370">📊 Jan-Des 2025 — v9_gabungan (1370 DRG)</option>
-                  <option value="dataset3_1363">📋 Okt-Jun — ok_jun_V1_gabungan (1363 DRG)</option>
-                  <option value="dataset3_1370">📋 Okt-Jun — ok_jun_V1_gabungan (1370 DRG)</option>
+                  <option value="jan_des_v11_1363">📊 Jan-Des 2025 (jan_des_v11) — 1363 DRG</option>
+                  <option value="jan_des_v11_1370">📊 Jan-Des 2025 (jan_des_v11) — 1370 DRG</option>
+                  <option value="okt_jun_v3_1363">📋 Okt-Jun (okt_jun_v3) — 1363 DRG</option>
+                  <option value="okt_jun_v3_1370">📋 Okt-Jun (okt_jun_v3) — 1370 DRG</option>
                 </select>
                 <select className="styled-select" value={simulasi} onChange={(e) => setSimulasi(Number(e.target.value))}>
                   <option value={1}>Sim 1: CW × NBR</option>

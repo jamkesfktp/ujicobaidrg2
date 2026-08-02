@@ -2,7 +2,7 @@
 const express = require('express');
 const router  = express.Router();
 const { pool }             = require('../db');
-const { getTarifCol, buildWhere } = require('./_helpers');
+const { getTarifCol, buildWhere, normalizeDbDataset } = require('./_helpers');
 
 // GET /api/nasional/summary — Ringkasan total nasional
 router.get('/summary', async (req, res) => {
@@ -217,7 +217,7 @@ router.get('/inacbg-detail', async (req, res) => {
 // GET /api/nasional/filter-options — Semua opsi dropdown filter
 router.get('/filter-options', async (req, res) => {
   try {
-    const dataset = req.query.dataset || 'jan_des_v11';
+    const dataset = normalizeDbDataset(req.query.dataset);
     const { rows } = await pool.query(`
       SELECT
         ARRAY_AGG(DISTINCT propinsi ORDER BY propinsi)          AS provinsi_list,

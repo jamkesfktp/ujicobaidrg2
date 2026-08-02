@@ -39,6 +39,10 @@ async function loadDatasetFromDb(pool, datasetId) {
     const t0 = Date.now();
     const agg = new Aggregator();
     
+    const dbDataset = (datasetId.startsWith('jan_des_v11') || datasetId.startsWith('dataset4') || datasetId.startsWith('dataset1'))
+        ? 'jan_des_v11'
+        : 'okt_jun_v3';
+
     const is1370 = datasetId.includes('1370');
     const tCol1 = is1370 ? 'idrg_total_tarif_1370_tanpa_af' : 'idrg_total_tarif_1363_tanpa_af';
     const tCol2 = is1370 ? 'idrg_total_tarif_1370_tanpa_af_juknistopup' : 'idrg_total_tarif_1363_tanpa_af_juknistopup';
@@ -61,7 +65,7 @@ async function loadDatasetFromDb(pool, datasetId) {
         WHERE dataset = $1
         GROUP BY kode_rs, propinsi, kabupaten, kelas_faskes, jenis, jenis_faskes, regional_2023, pemilik
     `;
-    const resHosp = await pool.query(qHosp, [datasetId]);
+    const resHosp = await pool.query(qHosp, [dbDataset]);
     console.log(`[DataGenerator] Loaded ${resHosp.rows.length} hospitals in ${Date.now() - t0}ms`);
 
     resHosp.rows.forEach(row => {
@@ -96,7 +100,7 @@ async function loadDatasetFromDb(pool, datasetId) {
         WHERE dataset = $1
         GROUP BY kelas_faskes, kelas_rawat, ptd, klaim_kompetensi
     `;
-    const resCross = await pool.query(qCross, [datasetId]);
+    const resCross = await pool.query(qCross, [dbDataset]);
     console.log(`[DataGenerator] Loaded ${resCross.rows.length} crosstab groups in ${Date.now() - t0}ms`);
 
     resCross.rows.forEach(row => {
@@ -142,7 +146,7 @@ async function loadDatasetFromDb(pool, datasetId) {
         WHERE dataset = $1
         GROUP BY kelas_rawat, inacbg, idrg_mdc, ${is1370 ? 'idrg_code_1370' : 'idrg_code_1363'}
     `;
-    const resDist = await pool.query(qDist, [datasetId]);
+    const resDist = await pool.query(qDist, [dbDataset]);
     console.log(`[DataGenerator] Loaded ${resDist.rows.length} distribution groups in ${Date.now() - t0}ms`);
 
     resDist.rows.forEach(row => {
@@ -179,7 +183,7 @@ async function loadDatasetFromDb(pool, datasetId) {
         WHERE dataset = $1
         GROUP BY kode_rs, kelas_faskes, kelas_rawat, ptd, klaim_kompetensi
     `;
-    const resProf = await pool.query(qProf, [datasetId]);
+    const resProf = await pool.query(qProf, [dbDataset]);
     console.log(`[DataGenerator] Loaded ${resProf.rows.length} RS Profile groups in ${Date.now() - t0}ms`);
 
     resProf.rows.forEach(row => {
@@ -231,17 +235,47 @@ async function loadDatasetFromDb(pool, datasetId) {
         for(let i=1; i<=61; i++) mLay.sim[`tarif_${i}`] += tarifs[i];
     });
 
-    globalCache[datasetId] = {
+    const datasetPayload = {
         hospitals: agg.hospitals,
         rs_profiles: agg.profiles,
         distribution: agg.distribution,
         crosstab: agg.crosstab
     };
+
+    globalCache[datasetId] = datasetPayload;
+    
+    // Also save aliases
+    if (datasetId === 'jan_des_v11_1363') {
+        globalCache['jan_des_v11'] = datasetPayload;
+        globalCache['dataset4_1363'] = datasetPayload;
+        globalCache['dataset4'] = datasetPayload;
+        globalCache['dataset1'] = datasetPayload;
+    } else if (datasetId === 'jan_des_v11_1370') {
+        globalCache['dataset4_1370'] = datasetPayload;
+    } else if (datasetId === 'okt_jun_v3_1363') {
+        globalCache['okt_jun_v3'] = datasetPayload;
+        globalCache['dataset3_1363'] = datasetPayload;
+        globalCache['dataset3'] = datasetPayload;
+    } else if (datasetId === 'okt_jun_v3_1370') {
+        globalCache['dataset3_1370'] = datasetPayload;
+    }
+
     console.log(`[DataGenerator] Finished SQL-based aggregation for dataset ${datasetId} in ${Date.now() - t0}ms!`);
 }
 
 function getDataset(datasetId) {
-    return globalCache[datasetId];
+    if (globalCache[datasetId]) return globalCache[datasetId];
+    
+    // Normalization fallback
+    const is1370 = datasetId.includes('1370');
+    if (datasetId.includes('jan_des') || datasetId.includes('dataset4') || datasetId.includes('dataset1')) {
+        return is1370 ? (globalCache['jan_des_v11_1370'] || globalCache['jan_des_v11']) : (globalCache['jan_des_v11_1363'] || globalCache['jan_des_v11']);
+    }
+    if (datasetId.includes('okt_jun') || datasetId.includes('dataset3')) {
+        return is1370 ? (globalCache['okt_jun_v3_1370'] || globalCache['okt_jun_v3']) : (globalCache['okt_jun_v3_1363'] || globalCache['okt_jun_v3']);
+    }
+
+    return globalCache['jan_des_v11_1363'] || Object.values(globalCache)[0];
 }
 
 module.exports = {

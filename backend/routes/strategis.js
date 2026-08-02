@@ -2,7 +2,7 @@
 const express = require('express');
 const router  = express.Router();
 const { pool }             = require('../db');
-const { getTarifCol, buildWhere } = require('./_helpers');
+const { getTarifCol, buildWhere, normalizeDbDataset } = require('./_helpers');
 
 // GET /api/strategis/rs-list — Daftar semua RS dengan aggregasi
 router.get('/rs-list', async (req, res) => {
@@ -20,19 +20,16 @@ router.get('/rs-list', async (req, res) => {
         MAX(jenis_faskes)                      AS jenis_faskes,
         MAX(kelas_faskes)                      AS kelas_faskes,
         MAX(regional_2023)                     AS regional,
-        MAX(klaim_kompetensi)                 AS klaim_kompetensi,
-        MAX(blu_non_blu)                       AS blu_non_blu,
-        MAX(rs_vertikal)                       AS rs_vertikal,
+        MAX(klaim_kompetensi)                  AS klaim_kompetensi,
         SUM(jml_kasus)::bigint                 AS total_kasus,
         SUM(total_tarif_inacbg)                AS total_tarif_inacbg,
         SUM(total_tarifrs)                     AS total_tarif_rs,
         SUM(${col})                            AS total_tarif_idrg,
         SUM(${col}) - SUM(total_tarif_inacbg)  AS selisih,
         CASE WHEN SUM(total_tarif_inacbg) > 0
-          THEN ROUND((SUM(${col}) / SUM(total_tarif_inacbg) - 1) * 100, 2)
-          ELSE 0 END                           AS pct_selisih,
-        COUNT(DISTINCT inacbg)::int            AS jumlah_inacbg,
-        COUNT(DISTINCT idrg_code_1363)::int    AS jumlah_idrg
+          THEN ROUND(((SUM(${col}) - SUM(total_tarif_inacbg)) / SUM(total_tarif_inacbg) * 100)::numeric, 2)
+          ELSE 0
+        END                                    AS pct_perubahan
       FROM mv_spending_data
       WHERE ${where}
       GROUP BY kode_rs
@@ -50,7 +47,7 @@ router.get('/rs-list', async (req, res) => {
 router.get('/rs/:kode', async (req, res) => {
   try {
     const { kode } = req.params;
-    const dataset  = req.query.dataset || 'jan_des_v11';
+    const dataset  = normalizeDbDataset(req.query.dataset);
     const col      = getTarifCol(req.query.simulasi, req.query.drg_type);
     const p        = [dataset, kode];
 
@@ -147,7 +144,8 @@ router.get('/rs/:kode', async (req, res) => {
 // GET /api/strategis/compare?kode_rs=xxx,yyy — Bandingkan beberapa RS
 router.get('/compare', async (req, res) => {
   try {
-    const { dataset = 'jan_des_v11', kode_rs } = req.query;
+    const dataset = normalizeDbDataset(req.query.dataset);
+    const { kode_rs } = req.query;
     if (!kode_rs) return res.status(400).json({ error: 'kode_rs wajib diisi (pisahkan dengan koma)' });
 
     const kodes = kode_rs.split(',').map(s => s.trim()).filter(Boolean);

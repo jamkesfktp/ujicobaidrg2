@@ -2,12 +2,12 @@
 const express = require('express');
 const router  = express.Router();
 const { pool }             = require('../db');
-const { getTarifCol, buildWhere } = require('./_helpers');
+const { getTarifCol, buildWhere, normalizeDbDataset } = require('./_helpers');
 
 // GET /api/peta/inacbg-list — Daftar semua INA-CBG (untuk dropdown)
 router.get('/inacbg-list', async (req, res) => {
   try {
-    const dataset = req.query.dataset || 'jan_des_v11';
+    const dataset = normalizeDbDataset(req.query.dataset);
     const { rows } = await pool.query(`
       SELECT
         inacbg,
@@ -28,23 +28,29 @@ router.get('/inacbg-list', async (req, res) => {
 // GET /api/peta/inacbg?inacbg=Q-5-44-0 — Mapping satu INA-CBG ke iDRG
 router.get('/inacbg', async (req, res) => {
   try {
-    const { dataset = 'jan_des_v11', inacbg } = req.query;
+    const dataset = normalizeDbDataset(req.query.dataset);
+    const { inacbg } = req.query;
+    const is1370 = (req.query.drg_type === '1370') || (req.query.dataset && req.query.dataset.includes('1370'));
+    const drgCol = is1370 ? 'idrg_code_1370' : 'idrg_code_1363';
+    const descCol = is1370 ? 'desc_idrg_1370' : 'desc_idrg_1363';
+    const simCol = is1370 ? 'idrg_total_tarif_1370_dengan_af' : 'idrg_total_tarif_1363_dengan_af';
+
     if (!inacbg) return res.status(400).json({ error: 'inacbg wajib diisi' });
 
     const { rows } = await pool.query(`
       SELECT
-        idrg_code_1363                         AS idrg_code,
-        MAX(desc_idrg_1363)                    AS deskripsi,
+        ${drgCol}                              AS idrg_code,
+        MAX(${descCol})                        AS deskripsi,
         MAX(kelompok_idrg)                     AS kelompok,
         MAX(idrg_mdc)                          AS mdc,
         SUM(jml_kasus)::bigint                 AS total_kasus,
         COUNT(DISTINCT kode_rs)::int           AS jumlah_rs,
         COUNT(DISTINCT propinsi)::int          AS jumlah_provinsi,
         SUM(total_tarif_inacbg)                AS total_tarif_inacbg,
-        SUM(idrg_total_tarif_1363_dengan_af)   AS total_tarif_idrg_sim2
+        SUM(${simCol})                         AS total_tarif_idrg_sim2
       FROM mv_spending_data
-      WHERE dataset = $1 AND inacbg = $2 AND idrg_code_1363 IS NOT NULL
-      GROUP BY idrg_code_1363
+      WHERE dataset = $1 AND inacbg = $2 AND ${drgCol} IS NOT NULL
+      GROUP BY ${drgCol}
       ORDER BY total_kasus DESC
     `, [dataset, inacbg]);
 

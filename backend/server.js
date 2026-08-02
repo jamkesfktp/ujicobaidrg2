@@ -23,8 +23,10 @@ const pool = new Pool({
 // Pre-load datasets on startup
 (async () => {
     try {
-        await loadDatasetFromDb(pool, 'jan_des_v11');
-        await loadDatasetFromDb(pool, 'okt_jun_v3');
+        await loadDatasetFromDb(pool, 'jan_des_v11_1363');
+        await loadDatasetFromDb(pool, 'jan_des_v11_1370');
+        await loadDatasetFromDb(pool, 'okt_jun_v3_1363');
+        await loadDatasetFromDb(pool, 'okt_jun_v3_1370');
     } catch (err) {
         console.error('Failed to pre-load datasets:', err);
     }
@@ -47,36 +49,32 @@ app.get('/data/*', (req, res) => {
         return res.sendFile(staticPath);
     }
 
-    // 2. URL format: /data/dataset3/dataset3_hospitals.json or /data/dataset1_rs_profiles.json
+    // 2. URL format: /data/jan_des_v11_hospitals.json or /data/dataset3_1363_hospitals.json
     const filename = req.path.split('/').pop().replace('.json', '').replace('.gz', '');
     
-    let datasetId = 'dataset1'; // default mapping
-    let fileType = filename;
-    
-    if (filename.includes('jan_des_v11')) { datasetId = 'jan_des_v11'; fileType = filename.replace('jan_des_v11_', ''); }
-    else if (filename.includes('okt_jun_v3')) { datasetId = 'okt_jun_v3'; fileType = filename.replace('okt_jun_v3_', ''); }
-    // Add backward compatibility for old dataset names in UI
-    else if (filename.includes('dataset4_1363')) { datasetId = 'jan_des_v11'; fileType = filename.replace('dataset4_1363_', ''); }
-    else if (filename.includes('dataset4_1370')) { datasetId = 'jan_des_v11'; fileType = filename.replace('dataset4_1370_', ''); }
-    else if (filename.includes('dataset3_1363')) { datasetId = 'okt_jun_v3'; fileType = filename.replace('dataset3_1363_', ''); }
-    else if (filename.includes('dataset3_1370')) { datasetId = 'okt_jun_v3'; fileType = filename.replace('dataset3_1370_', ''); }
-    // if UI still asks for dataset4_hospitals instead of dataset4_1363_hospitals
-    else if (filename.includes('dataset4')) { datasetId = 'jan_des_v11'; fileType = filename.replace('dataset4_', ''); }
-    else if (filename.includes('dataset3')) { datasetId = 'okt_jun_v3'; fileType = filename.replace('dataset3_', ''); }
+    let datasetId = 'jan_des_v11_1363';
+    const is1370 = filename.includes('1370') || (req.query && req.query.drg_type === '1370');
+    const isOktJun = filename.includes('okt_jun') || filename.includes('dataset3');
+
+    if (isOktJun) {
+        datasetId = is1370 ? 'okt_jun_v3_1370' : 'okt_jun_v3_1363';
+    } else {
+        datasetId = is1370 ? 'jan_des_v11_1370' : 'jan_des_v11_1363';
+    }
     
     const data = getDataset(datasetId);
-    if (!data) return res.status(503).json({ error: 'Dataset is still loading or not found' });
+    if (!data) return res.status(503).json({ error: `Dataset ${datasetId} is still loading or not found` });
     
-    // Some fileTypes might have trailing month/drg like `_all_1363` which we don't use
-    let actualFileType = fileType;
+    // Find matching key
+    let actualFileType = filename;
     ['hospitals', 'rs_profiles', 'distribution', 'crosstab', 'drgs', 'drg_analysis', 'levels', 'regions', 'services', 'shifting'].forEach(t => {
-        if (fileType.startsWith(t)) actualFileType = t;
+        if (filename.includes(t)) actualFileType = t;
     });
     
     if (data[actualFileType]) {
         res.json(data[actualFileType]);
     } else {
-        res.status(404).json({ error: `File type ${actualFileType} not found in memory` });
+        res.status(404).json({ error: `File type ${actualFileType} not found in memory for ${datasetId}` });
     }
 });
 
