@@ -235,11 +235,35 @@ async function loadDatasetFromDb(pool, datasetId) {
         for(let i=1; i<=61; i++) mLay.sim[`tarif_${i}`] += tarifs[i];
     });
 
+    // 5. Compute regions aggregation from hospitals
+    const regions = {};
+    Object.values(agg.hospitals).forEach(h => {
+        const p = (h.prop || 'Lainnya').trim().toUpperCase();
+        if (!regions[p]) {
+            regions[p] = {
+                kasus: 0,
+                inacbg: 0,
+                sim: initSim(),
+                rsCount: 0
+            };
+        }
+        regions[p].kasus += h.kasus || 0;
+        regions[p].inacbg += h.inacbg || 0;
+        regions[p].rsCount += 1;
+        if (h.sim) {
+            for (let i = 1; i <= 61; i++) {
+                regions[p].sim[`tarif_${i}`] += (h.sim[`tarif_${i}`] || 0);
+            }
+        }
+    });
+
     const datasetPayload = {
         hospitals: agg.hospitals,
         rs_profiles: agg.profiles,
         distribution: agg.distribution,
-        crosstab: agg.crosstab
+        crosstab: agg.crosstab,
+        regions: regions,
+        inacbg_to_drg: {}
     };
 
     globalCache[datasetId] = datasetPayload;

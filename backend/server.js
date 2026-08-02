@@ -67,14 +67,14 @@ app.get('/data/*', (req, res) => {
     
     // Find matching key
     let actualFileType = filename;
-    ['hospitals', 'rs_profiles', 'distribution', 'crosstab', 'drgs', 'drg_analysis', 'levels', 'regions', 'services', 'shifting'].forEach(t => {
+    ['hospitals', 'rs_profiles', 'distribution', 'crosstab', 'drgs', 'drg_analysis', 'levels', 'regions', 'services', 'shifting', 'inacbg_to_drg'].forEach(t => {
         if (filename.includes(t)) actualFileType = t;
     });
     
-    if (data[actualFileType]) {
+    if (data[actualFileType] !== undefined) {
         res.json(data[actualFileType]);
     } else {
-        res.status(404).json({ error: `File type ${actualFileType} not found in memory for ${datasetId}` });
+        res.json({});
     }
 });
 
